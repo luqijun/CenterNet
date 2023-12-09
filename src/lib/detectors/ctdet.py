@@ -13,11 +13,11 @@ try:
 except:
   print('NMS not imported! If you need it,'
         ' do \n cd $CenterNet_ROOT/src/lib/external \n make')
-from models.decode import ctdet_decode
-from models.utils import flip_tensor
-from utils.image import get_affine_transform
-from utils.post_process import ctdet_post_process
-from utils.debugger import Debugger
+from ..models.decode import ctdet_decode
+from ..models.utils import flip_tensor
+from ..utils.image import get_affine_transform
+from ..utils.post_process import ctdet_post_process
+from ..utils.debugger import Debugger
 
 from .base_detector import BaseDetector
 

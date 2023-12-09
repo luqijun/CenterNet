@@ -5,12 +5,12 @@ from __future__ import print_function
 import torch
 import numpy as np
 
-from models.losses import FocalLoss, L1Loss, BinRotLoss
-from models.decode import ddd_decode
-from models.utils import _sigmoid
-from utils.debugger import Debugger
-from utils.post_process import ddd_post_process
-from utils.oracle_utils import gen_oracle_map
+from ..models.losses import FocalLoss, L1Loss, BinRotLoss
+from ..models.decode import ddd_decode
+from ..models.utils import _sigmoid
+from ..utils.debugger import Debugger
+from ..utils.post_process import ddd_post_process
+from ..utils.oracle_utils import gen_oracle_map
 from .base_trainer import BaseTrainer
 
 class DddLoss(torch.nn.Module):

@@ -9,13 +9,13 @@ import time
 import torch
 
 
-from models.decode import ddd_decode
-from models.utils import flip_tensor
-from utils.image import get_affine_transform
-from utils.post_process import ddd_post_process
-from utils.debugger import Debugger
-from utils.ddd_utils import compute_box_3d, project_to_image, alpha2rot_y
-from utils.ddd_utils import draw_box_3d, unproject_2d_to_3d
+from ..models.decode import ddd_decode
+from ..models.utils import flip_tensor
+from ..utils.image import get_affine_transform
+from ..utils.post_process import ddd_post_process
+from ..utils.debugger import Debugger
+from ..utils.ddd_utils import compute_box_3d, project_to_image, alpha2rot_y
+from ..utils.ddd_utils import draw_box_3d, unproject_2d_to_3d
 
 from .base_detector import BaseDetector
 

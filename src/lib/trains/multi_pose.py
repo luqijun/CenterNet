@@ -5,12 +5,12 @@ from __future__ import print_function
 import torch
 import numpy as np
 
-from models.losses import FocalLoss, RegL1Loss, RegLoss, RegWeightedL1Loss
-from models.decode import multi_pose_decode
-from models.utils import _sigmoid, flip_tensor, flip_lr_off, flip_lr
-from utils.debugger import Debugger
-from utils.post_process import multi_pose_post_process
-from utils.oracle_utils import gen_oracle_map
+from ..models.losses import FocalLoss, RegL1Loss, RegLoss, RegWeightedL1Loss
+from ..models.decode import multi_pose_decode
+from ..models.utils import _sigmoid, flip_tensor, flip_lr_off, flip_lr
+from ..utils.debugger import Debugger
+from ..utils.post_process import multi_pose_post_process
+from ..utils.oracle_utils import gen_oracle_map
 from .base_trainer import BaseTrainer
 
 class MultiPoseLoss(torch.nn.Module):
