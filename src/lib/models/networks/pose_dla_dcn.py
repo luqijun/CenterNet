@@ -467,6 +467,7 @@ class DLASeg(nn.Module):
                 fill_fc_weights(fc)
             self.__setattr__(head, fc)
 
+
     def forward(self, x):
         x = self.base(x)
         x = self.dla_up(x)

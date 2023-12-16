@@ -2,11 +2,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import math
 import time
 import torch
+import cv2
+import os
 from progress.bar import Bar
 from ..models.data_parallel import DataParallel
-from ..utils.utils import AverageMeter
+from ..utils.utils import AverageMeter, add_points
 
 
 class ModelWithLoss(torch.nn.Module):
@@ -52,6 +55,8 @@ class BaseTrainer(object):
       torch.cuda.empty_cache()
 
     opt = self.opt
+    save_image_dir = os.path.join(opt.log_dir, phase)
+    os.makedirs(save_image_dir, exist_ok=True)
     results = {}
     data_time, batch_time = AverageMeter(), AverageMeter()
     avg_loss_stats = {l: AverageMeter() for l in self.loss_stats}
@@ -63,9 +68,13 @@ class BaseTrainer(object):
         break
       data_time.update(time.time() - end)
 
-      for k in batch:
-        if k != 'meta':
-          batch[k] = batch[k].to(device=opt.device, non_blocking=True)    
+      batch['input'] = batch['input'].to(device=opt.device)
+      batch['targets'] = [{k: v.to(device=opt.device) if isinstance(v, torch.Tensor) else v for k, v in t.items()} for t in batch['targets']]
+
+      # for k in batch:
+      #   if k != 'meta' and not isinstance(k, list):
+      #     batch[k] = batch[k].to(device=opt.device, non_blocking=True)
+
       output, loss, loss_stats = model_with_loss(batch)
       loss = loss.mean()
       if phase == 'train':
@@ -87,7 +96,10 @@ class BaseTrainer(object):
           '|Net {bt.avg:.3f}s'.format(dt=data_time, bt=batch_time)
       if opt.print_iter > 0:
         if iter_id % opt.print_iter == 0:
-          print('{}/{}| {}'.format(opt.task, opt.exp_id, Bar.suffix)) 
+          print('{}/{}| {}'.format(opt.task, opt.exp_id, Bar.suffix))
+          first_image_points_num = batch['targets'][0]['points'].shape[0]
+          image_with_points =  add_points(batch['input'][0], loss_stats['pred_points'][0:first_image_points_num], batch['targets'][0]['points'])
+          cv2.imwrite(os.path.join(save_image_dir, 'pred_{}.jpg'.format(iter_id)), image_with_points)
       else:
         bar.next()
       

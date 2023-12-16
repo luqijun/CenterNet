@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import _init_paths
+# import _init_paths
 
 import os
 
@@ -14,12 +14,15 @@ from lib.models.data_parallel import DataParallel
 from lib.logger import Logger
 from lib.datasets.dataset_factory import get_dataset
 from lib.trains.train_factory import train_factory
-
+from lib.utils.misc import collate_fn
+from lib.utils.utils import copy_cur_env
 
 def main(opt):
   torch.manual_seed(opt.seed)
   torch.backends.cudnn.benchmark = not opt.not_cuda_benchmark and not opt.test
   Dataset = get_dataset(opt.dataset, opt.task)
+
+  # if opt.dataset!='sha': # 特殊处理
   opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
   print(opt)
 
@@ -46,7 +49,8 @@ def main(opt):
       batch_size=1, 
       shuffle=False,
       num_workers=1,
-      pin_memory=True
+      pin_memory=True,
+      collate_fn=collate_fn if opt.dataset == 'sha' else None
   )
 
   if opt.test:
@@ -60,7 +64,8 @@ def main(opt):
       shuffle=True,
       num_workers=opt.num_workers,
       pin_memory=True,
-      drop_last=True
+      drop_last=True,
+      collate_fn=collate_fn if opt.dataset=='sha' else None
   )
 
   print('Starting training...')
@@ -72,7 +77,7 @@ def main(opt):
     for k, v in log_dict_train.items():
       logger.scalar_summary('train_{}'.format(k), v, epoch)
       logger.write('{} {:8f} | '.format(k, v))
-    if opt.val_intervals > 0 and epoch % opt.val_intervals == 0:
+    if epoch > opt.val_start and opt.val_intervals > 0 and epoch % opt.val_intervals == 0:
       save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(mark)), 
                  epoch, model, optimizer)
       with torch.no_grad():
@@ -80,10 +85,16 @@ def main(opt):
       for k, v in log_dict_val.items():
         logger.scalar_summary('val_{}'.format(k), v, epoch)
         logger.write('{} {:8f} | '.format(k, v))
-      if log_dict_val[opt.metric] < best:
+      if log_dict_val[opt.metric] < best: # 保存最优的结果
         best = log_dict_val[opt.metric]
-        save_model(os.path.join(opt.save_dir, 'model_best.pth'), 
+        save_model(os.path.join(opt.save_dir, f'model_best_{epoch}_{best}.pth'),
                    epoch, model)
+
+        save_image_dir = os.path.join(opt.log_dir, 'val')
+        best_save_image_dir = os.path.join(opt.log_dir, 'val_best_mae')
+        if os.path.exists(save_image_dir):
+            copy_cur_env(save_image_dir, best_save_image_dir, [])
+
     else:
       save_model(os.path.join(opt.save_dir, 'model_last.pth'), 
                  epoch, model, optimizer)

@@ -63,6 +63,25 @@ def add_box(image, bbox, sc, cat_id):
                 color, 2)
   return image
 
+
+def add_points(img_raw, points):
+
+    h, w = img_raw.shape[-2:]
+    points[:, 0] *= h
+    points[:, 1] *= w
+
+    # draw the predictions
+    size = 4
+    img_to_draw = cv2.cvtColor(np.array(img_raw), cv2.COLOR_RGB2BGR)
+
+    for p in points:
+        img_to_draw = cv2.circle(img_to_draw, (int(p[0]), int(p[1])), size, (0, 0, 255), -1)
+
+    cv2.putText(img_to_draw, f'Predict Crowd Count: {len(points)}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)  # 在图片上写文字
+    # save the visualized image
+    # cv2.imwrite(os.path.join(args.output_dir, 'pred{}.jpg'.format(predict_cnt)), img_to_draw)
+    return img_to_draw
+
 if __name__ == '__main__':
   dets = []
   img_ids = coco.getImgIds()
